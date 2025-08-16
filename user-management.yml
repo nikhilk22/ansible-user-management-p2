@@ -1,0 +1,39 @@
+---
+- name: user management
+  hosts: webservers
+  become: yes                  
+
+  tasks:
+    - name: ensure 'devops' groups exist
+      ansible.builtin.group:                                      # module to manage groups  
+         name: devops 
+         state: present
+
+    - name: create users and add to devops
+      ansible.builtin.user:
+        name: "{{ item }}"                                        # loop variable username    
+        group: devops                                             # add users to devops
+        create_home: yes                                           
+        shell: /bin/bash                                          # default login shell  
+      loop:                                                       # list of users   
+        - alice
+        - grok
+        - charlie
+
+    - name: Set authorized keys for users
+      ansible.builtin.authorized_key:
+        user: "{{ item }}"                                        # Apply to each user
+        state: present                                            # Ensure key is present
+        key: "{{ lookup('file', 'keys/{{ item }}.pub') }}"        # Load public key from file
+      loop:
+        - alice
+        - grok
+        - charlie
+
+    - name: Give 'devops' group sudo access
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/devops                               # File to store sudo privileges
+        content: "%devops ALL=(ALL) NOPASSWD:ALL"                 # Allow passwordless sudo for devops group
+        mode: '0440'                                              # Correct file permissions for sudoers      
+      
+

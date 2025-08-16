@@ -1,0 +1,56 @@
+#create the folder
+mkdir keys
+
+# Generate a new SSH key pair for 'alice'
+ssh-keygen -t rsa -b 2048 -f keys/alice
+
+# Generate a new SSH key pair for 'bob'
+ssh-keygen -t rsa -b 2048 -f keys/bob
+
+# Generate a new SSH key pair for 'charlie'
+ssh-keygen -t rsa -b 2048 -f keys/charlie
+
+# Explanation of options used:
+# -t rsa       → Specifies the type of key (RSA in this case).
+# -b 2048      → Sets the key length to 2048 bits (secure enough for most uses).
+# -f keys/...  → Defines the output file path where the private key will be stored.
+#                 The corresponding public key will be saved as <filename>.pub.
+
+# Note:
+# You **don’t need to create a separate EC2 instance for each user (alice, bob, charlie).**
+# These keys are just for authentication. You can:
+#   - Use the same server (one EC2 instance).
+#   - Create multiple user accounts on that instance (alice, bob, charlie).
+#   - Copy each user’s public key (e.g., alice.pub) into their respective ~/.ssh/authorized_keys.
+# This way, all users connect to the **same instance**, but securely with their own accounts 
+ 
+
+#how do i debug issues 
+#When running your playbook, add -v, -vv, -vvv, or -vvvv for more details.
+ansible-playbook playbook.yml -i inventory -vvv
+ 
+#-v → basic details (which task failed).
+
+#-vvv → very detailed (module arguments, SSH commands, etc.).
+
+#-vvvv → shows even raw SSH connections (rarely needed).
+
+#. Check remote system logs
+
+#When a task fails (like Apache service didn’t start), Ansible usually suggests commands:
+
+systemctl status apache2
+journalctl -xeu apache2
+#
+#4. Dry-run mode (check without changes)
+
+#You can test a playbook without making changes using:
+
+ansible-playbook playbook.yml -i inventory --check
+
+#5. Step through tasks one by one
+
+#Run in step mode:
+
+ansible-playbook playbook.yml -i inventory --step
+
